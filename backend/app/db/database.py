@@ -1,25 +1,27 @@
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from config import DATABASE_URL
 
 # Загружаем переменные окружения
 load_dotenv()
 
-# Получаем URL базы данных из .env
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:170805Maks@localhost:5432/postgres")
-
-# Создание движка базы данных
+# Подключение к БД
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
-
-# Базовый класс для моделей
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Создание сессии
+# Определяем базу
+Base = declarative_base()
+
+# Создаём сессию
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Функция для получения сессии базы данных
 def get_db():
     db = SessionLocal()
     try:

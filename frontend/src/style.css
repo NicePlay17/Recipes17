@@ -1,0 +1,93 @@
+/* src/style.css */
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #0033ff13;
+  margin: 0;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-container {
+  background: rgb(255, 255, 255);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.form-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px; /* Больше расстояние между полями */
+}
+
+form label {
+  text-align: left; /* Выравнивание подписей влево */
+  font-weight: bold;
+  margin-bottom: 5px; /* Отступ между меткой и полем ввода */
+  padding-left: 0; /* Убрал левый отступ */
+}
+
+form input {
+  width: 100%; /* Растягиваем по ширине родителя */
+  padding: 8px; /* Отступ внутри поля */
+  font-size: 14px;
+  border: 1px solid #665555;
+  border-radius: 4px;
+  box-sizing: border-box; /* Учитываем padding в ширине */
+}
+
+form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #76582e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px; /* Расстояние между кнопкой и полем Пароль */
+}
+
+form button:hover {
+  background-color: #d68b0056;
+}
+
+.register-button {
+  margin-top: 10px; /* Добавляем отступ между кнопками */
+  background: transparent; /* Прозрачный фон */
+  color: #000000; /* Зеленый текст */
+  border: 2px solid rgb(255, 255, 255); /* Зеленая рамка */
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.success-message {
+  color: green;
+  font-size: 14px;
+  margin-top: 10px;
+}
