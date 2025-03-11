@@ -2,19 +2,18 @@ import hashlib
 import jwt
 import datetime
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
-from app.utils import hash_password, verify_password
-from app.db.schemas import UserCreate, UserLogin
-from app.db.database import get_db, SessionLocal
-from app.db.models import User
-from .schemas import UserCreate
-from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from datetime import timedelta
+from fastapi.security import OAuth2PasswordBearer
+from app.db.models.models import User
+from app.db.database import get_db
+from app.db.schemas.schemas import UserCreate, UserLogin
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-
-
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 router = APIRouter()
@@ -26,63 +25,53 @@ def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 
+# Создание токена
+def create_access_token(data: dict, expires_delta: timedelta):
+    to_encode = data.copy()
+    expire = datetime.datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
 # Регистрация пользователя
 @router.post("/register")
-def register(user: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.query(User).filter(User.username == user.username).first()
+async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).filter(User.username == user.username))
+    existing_user = result.scalars().first()
+
     if existing_user:
         raise HTTPException(status_code=400, detail="Пользователь уже существует")
 
     hashed_password = hash_password(user.password)
-    new_user = User(username=user.username, password=hashed_password)
+    new_user = User(username=user.username, hashed_password=hashed_password)  # <-- Исправлено
+
     db.add(new_user)
-    db.commit()
+    await db.commit()
+    await db.refresh(new_user)
+
     return {"message": "Регистрация успешна! Перейдите на страницу входа."}
 
 
 # Авторизация пользователя
 @router.post("/login")
-def login(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.username == user.username).first()
-    if not db_user or db_user.password != hash_password(user.password):
+async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
+    db_user = await authenticate_user(db, user.username, user.password)
+
+    if not db_user:
         raise HTTPException(status_code=400, detail="Неверный логин или пароль")
 
-    expiration = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    token = jwt.encode({"sub": user.username, "exp": expiration}, SECRET_KEY, algorithm=ALGORITHM)
-    return {"token": token}
+    access_token = create_access_token({"sub": db_user.username}, timedelta(minutes=60))
 
-def create_access_token(data: dict, expires_delta: timedelta):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return {"token": access_token}
 
-# def create_user(user: UserCreate):
-#     db = SessionLocal()
-#     hashed_password = hash_password(user.password)
-#     new_user = User(username=user.username, password=hashed_password)
-#     db.add(new_user)
-#     db.commit()
-#     db.refresh(new_user)
-#     db.close()
-#     return {"message": "User created"}
 
-async def create_user(user: UserCreate):
-    async with SessionLocal() as db:
-        hashed_password = hash_password(user.password)
-        new_user = User(username=user.username, password=hashed_password)
+# Аутентификация пользователя
+async def authenticate_user(db: AsyncSession, username: str, password: str):
+    result = await db.execute(select(User).filter(User.username == username))
+    db_user = result.scalars().first()
 
-        db.add(new_user)
-        await db.commit()
-        await db.refresh(new_user)  
+    if not db_user or hash_password(password) != db_user.hashed_password:  # <-- Исправлено
+        return None
 
-        return {"message": "User created", "user_id": new_user.id}
-
-def authenticate_user(user: UserLogin):
-    db = SessionLocal()
-    db_user = db.query(User).filter(User.email == user.email).first()
-    db.close()
-    if not db_user or not verify_password(user.password, db_user.password):
-        return {"error": "Invalid credentials"}
-    return {"message": "Login successful"}
+    return db_user
