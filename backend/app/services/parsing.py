@@ -149,8 +149,8 @@ if __name__ == "__main__":
     scraper = RecipeScraper(
         chromedriver_path="D:/Web/chromedriver-win64/chromedriver.exe",
         base_url="https://www.russianfood.com/recipes/bytype/?fid=3&sort=id",
-        links_file="../db/recipes_links_and_titles.txt",
-        output_file="../db/topchik_utf8.txt"
+        links_file="backend/app/db/recipes_links_and_titles.txt",
+        output_file="backend/app/db/topchik_utf8.txt"
     )
     
     # Сначала извлекаем все ссылки с главной страницы

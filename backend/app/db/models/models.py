@@ -8,14 +8,18 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-Base = declarative_base()
+class Recipe(Base):
+    __tablename__ = "recipes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
 
 class Ingredient(Base):
     __tablename__ = "ingredients"
-
     id = Column(Integer, primary_key=True)
-    recipe_name = Column(String, nullable=False)
-    ingredient = Column(String, nullable=False)
+    recipe_id = Column(Integer, nullable=False)
+    name = Column(String, nullable=False)
+    quantity = Column(String, nullable=False)
 
 engine = create_engine(DATABASE_URL)
 
