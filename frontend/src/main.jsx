@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom/client';  // Для React 18
 import { useNavigate } from "react-router-dom";  // Импортируем useNavigate
 import './style.css';
 import App from './App';
+import "./index.css";
+
 
 function Home() {
   const [message, setMessage] = useState("");

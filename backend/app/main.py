@@ -1,15 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import timedelta
 from jose import jwt, JWTError
-
 from app.db.database import get_db, init_db
-from app.db.models.models import User
+from app.db.models.models import User, Recipe 
 from app.db.auth import router as auth_router
 from sqlalchemy.future import select
 from dotenv import load_dotenv
 import os
+from app.routers.recipes import router as search_router
+from app.routers.ingredients import router as recipe_router
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -21,7 +22,8 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "http://localhost:5174",
-    "http://localhost:5175"
+    "http://localhost:5175",
+    "http://127.0.0.1:5173"
 ]
 
 app.add_middleware(
@@ -40,6 +42,9 @@ async def startup():
 
 # Подключаем маршруты авторизации
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(search_router, prefix="", tags=["search"])
+app.include_router(recipe_router, prefix="", tags=["recipe"])
+
 
 
 # Главная страница API
@@ -64,3 +69,4 @@ async def profile(token: str, db: AsyncSession = Depends(get_db)):
         return {"username": user.username}
     except JWTError:
         raise HTTPException(status_code=401, detail="Ошибка токена")
+

@@ -5,7 +5,7 @@ const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Хук для переходов между страницами
+  const navigate = useNavigate(); // Добавляем навигацию
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +24,8 @@ const Login = ({ onLogin }) => {
       }
 
       const data = await response.json();
-      onLogin(data.token); // передаем токен в родительский компонент
+      onLogin(data.token); // передаем токен в App
+      navigate("/home"); // 🔥 Переносим пользователя на /home после входа
     } catch (error) {
       setError(error.message);
     }
@@ -55,8 +56,6 @@ const Login = ({ onLogin }) => {
         {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit">Войти</button>
       </form>
-      
-      {/* Кнопка регистрации */}
       <button onClick={() => navigate('/register')} className="register-button">
         Зарегистрироваться
       </button>

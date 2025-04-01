@@ -1,0 +1,27 @@
+.searchInput {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.searchResults {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.searchResults li {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.searchResults li:hover {
+    background: #f1f1f1;
+}

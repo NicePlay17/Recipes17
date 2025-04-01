@@ -1,16 +1,18 @@
 import hashlib
 import jwt
 import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import timedelta
 from fastapi.security import OAuth2PasswordBearer
-from app.db.models.models import User
+from app.db.models.models import User, Recipe
 from app.db.database import get_db
 from app.db.schemas.schemas import UserCreate, UserLogin
 from dotenv import load_dotenv
 import os
+
+
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
