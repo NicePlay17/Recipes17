@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import os
 from app.routers.recipes import router as search_router
 from app.routers.ingredients import router as recipe_router
+from app.routers.change_password import router as password_change_router
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -44,6 +45,7 @@ async def startup():
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(search_router, prefix="", tags=["search"])
 app.include_router(recipe_router, prefix="", tags=["recipe"])
+app.include_router(password_change_router, prefix="", tags=["user"])
 
 
 
