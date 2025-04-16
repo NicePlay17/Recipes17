@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SearchRecipes = () => {
   const [query, setQuery] = useState("");
   const [recipes, setRecipes] = useState([]);
+  const navigate = useNavigate();  // Хук для навигации
 
   const handleSearch = async () => {
     if (query.length < 2) {
@@ -26,6 +28,10 @@ const SearchRecipes = () => {
     }
   };
 
+  const handleRecipeClick = (id) => {
+    navigate(`/recipe/${id}`);  // Переход на страницу рецепта
+  };
+
   return (
     <div className="flex flex-col items-center p-4">
       <input
@@ -44,10 +50,11 @@ const SearchRecipes = () => {
 
       {recipes.length > 0 && (
         <ul className="mt-4 w-full max-w-xl bg-white border border-gray-300 rounded-md max-h-52 overflow-y-auto">
-          {recipes.map((recipe, index) => (
+          {recipes.map((recipe) => (
             <li
-              key={recipe.id || index}
+              key={recipe.id}
               className="p-3 cursor-pointer hover:bg-gray-100"
+              onClick={() => handleRecipeClick(recipe.id)}  // Обработчик клика
             >
               {recipe.name}
             </li>

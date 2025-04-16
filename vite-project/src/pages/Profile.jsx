@@ -1,61 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { changePassword, clearMessages } from "../features/profileSlice";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");  // Текущий пароль для смены
-  const [newPassword, setNewPassword] = useState("");          // Новый пароль
-  const [newConfirmPassword, setNewConfirmPassword] = useState(""); // Подтверждение нового пароля
-  const [error, setError] = useState("");  // Ошибка
-  const [message, setMessage] = useState("");  // Успешное сообщение
-
-  const handleSave = () => {
-    if (password !== confirmPassword) {
-      alert("Пароли не совпадают!");
-      return;
-    }
-    alert("Данные сохранены");
-  };
-
-  // Функция для изменения пароля
+  const dispatch = useDispatch();
+  
+  // Состояния для полей формы
+  const [currentPassword, setCurrentPassword] = useState("");  
+  const [newPassword, setNewPassword] = useState("");          
+  const [newConfirmPassword, setNewConfirmPassword] = useState(""); 
+  
+  // Получаем данные из Redux
+  const { username, error, message, status } = useSelector((state) => state.profile);
+  
+  // Эффект для очистки сообщений при изменении
+  useEffect(() => {
+    return () => {
+      dispatch(clearMessages());
+    };
+  }, [dispatch]);
+  
+  // Функция для смены пароля
   const handleChangePassword = async (e) => {
     e.preventDefault();
 
     if (newPassword !== newConfirmPassword) {
-      setError("Пароли не совпадают!");
-      return;
+      return alert("Пароли не совпадают!");
     }
 
     try {
       const token = localStorage.getItem("token"); // Получаем токен из localStorage
 
-      const response = await fetch("http://localhost:8000/change-password/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: newPassword,
-          token: token, // Передаем токен в теле запроса
-        }),
-      });
+      const data = await dispatch(changePassword({ current_password: currentPassword, new_password: newPassword }));
 
-      if (!response.ok) {
-        throw new Error("Не удалось изменить пароль");
+      if (changePassword.rejected.match(data)) {
+        alert("Ошибка: " + data.payload);
+      } else {
+        setCurrentPassword("");
+        setNewPassword("");
+        setNewConfirmPassword("");
       }
-
-      const data = await response.json();
-      setMessage(data.message);
-      setCurrentPassword("");
-      setNewPassword("");
-      setNewConfirmPassword("");
     } catch (err) {
-      setError(err.message);
+      alert("Произошла ошибка");
     }
   };
 
@@ -64,39 +52,21 @@ export default function Profile() {
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg">
         <h2 className="text-3xl font-semibold text-center mb-6 text-gray-700">Мой профиль</h2>
 
+        {/* Имя пользователя */}
         <div className="space-y-6">
-          {/* Имя пользователя */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">Имя:</label>
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              readOnly
               className="w-full p-4 bg-white border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-500 transition-all"
             />
           </div>
 
-          {/* Кнопки сохранения */}
-          <div className="flex justify-between gap-4 mt-6">
-            <button
-              className="w-full py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-300"
-              onClick={handleSave}
-            >
-              Сохранить
-            </button>
-            <button
-              className="w-full py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all duration-300"
-              onClick={() => navigate("/home")}
-            >
-              Назад
-            </button>
-          </div>
-        </div>
-
-        {/* Форма для смены пароля */}
-        <div className="mt-8">
+          {/* Форма для смены пароля */}
           <h3 className="text-2xl font-semibold text-gray-700 mb-4">Сменить пароль</h3>
-
+          
           {error && <p className="text-red-600">{error}</p>}
           {message && <p className="text-green-600">{message}</p>}
 
@@ -137,10 +107,21 @@ export default function Profile() {
             <button
               type="submit"
               className="w-full py-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-300 mt-6"
+              disabled={status === 'loading'}
             >
               Сменить пароль
             </button>
           </form>
+        </div>
+
+        {/* Кнопка назад */}
+        <div className="flex justify-between gap-4 mt-6">
+          <button
+            className="w-full py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-all duration-300"
+            onClick={() => navigate("/home")}
+          >
+            Назад
+          </button>
         </div>
       </div>
     </div>

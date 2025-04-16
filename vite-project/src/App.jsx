@@ -1,50 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from "./components/Login";
-import Register from './components/Register';
-import HomePage from './components/HomePage';
-import ProfilePage from './components/Profile';
-import Ingredients from './components/Ingredients'; // Импорт компонента с ингредиентами
-import "./style.css";
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import HomePage from './pages/HomePage';
+import ProfilePage from './pages/Profile';
+import Ingredients from './pages/Ingredients'; // Новый компонент страницы рецепта
+import { setAuthStatus } from './features/authSlice';
+import FilterPage from './pages/FilterPage'; // Подразумеваем, что у вас есть этот action
 
 const App = () => {
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
-  
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
+    // Если токен существует, считаем, что пользователь авторизован
     if (token) {
-      localStorage.setItem("token", token);
-    } else {
-      localStorage.removeItem("token");
+      dispatch(setAuthStatus(true));  // Устанавливаем статус авторизации
     }
-  }, [token]);
-
-  const handleLogin = (newToken) => {
-    setToken(newToken);
-  };
-
-  const handleLogout = () => {
-    setToken(null);
-  };
+  }, [token, dispatch]);
 
   return (
-    <Router>
-      <Routes>
-        {token ? (
-          <>
-            <Route path="/home" element={<HomePage onLogout={handleLogout} />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/recipe/:id" element={<Ingredients />} /> {/* Новый маршрут для ингредиентов */}
-            <Route path="*" element={<Navigate to="/home" />} />
-          </>
-        ) : (
-          <>
-            <Route path="/" element={<Login onLogin={handleLogin} />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </>
-        )}
-      </Routes>
-    </Router>
+    <Routes>
+      {isAuthenticated ? (
+        <>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/recipe/:id" element={<Ingredients />} /> {/* Новый маршрут для рецепта */}
+          <Route path="/filter" element={<FilterPage />} /> {/* Страница фильтра */}
+          <Route path="*" element={<Navigate to="/home" />} />
+        </>
+      ) : (
+        <>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </>
+      )}
+    </Routes>
   );
 };
 

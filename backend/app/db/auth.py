@@ -55,9 +55,9 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return {"message": "Регистрация успешна! Перейдите на страницу входа."}
 
 
-# Авторизация пользователя
 @router.post("/login")
 async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
+    print(f"Received login request: {user}")  # Логируем данные, которые приходят
     db_user = await authenticate_user(db, user.username, user.password)
 
     if not db_user:
@@ -65,8 +65,15 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
 
     access_token = create_access_token({"sub": db_user.username}, timedelta(minutes=60))
 
-    return {"token": access_token}
-
+    # Возвращаем и токен, и нужные поля пользователя
+    return {
+        "token": access_token,
+        "user": {
+            "id": db_user.id,
+            "username": db_user.username,
+            # Добавь другие поля, если нужно
+        }
+    }
 
 # Аутентификация пользователя
 async def authenticate_user(db: AsyncSession, username: str, password: str):
