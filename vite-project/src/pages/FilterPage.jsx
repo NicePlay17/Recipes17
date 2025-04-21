@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addIngredient, removeIngredient } from '../features/Filtersslice';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const FilterPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); 
   const selectedIngredients = useSelector(state => state.filters?.selectedIngredients || []);
   const [ingredients, setIngredients] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const backgrounds = [
+    "/images/background6.jpg" 
+    
+  ];
 
   useEffect(() => {
     const fetchIngredients = async () => {
@@ -60,7 +65,9 @@ const FilterPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen p-4">
+    <div  className="min-h-screen bg-cover bg-center flex items-center justify-center px-6 py-10"
+ style={{ backgroundImage: `url(${backgrounds[0]})` }}
+>
       {/* Центрированная панель с фильтрами */}
       <div className="w-1/2 p-4 bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl mb-2 text-center">Найди и выбери ингредиенты</h2>
@@ -72,7 +79,16 @@ const FilterPage = () => {
           placeholder="Начни вводить..."
           className="w-full p-2 border rounded mb-2"
         />
+         {/* 🔙 Кнопка Назад */}
+      <div className="absolute top-6 left-6">
+      <button
+      onClick={() => navigate('/home')}
+      className="absolute top left bg-[#a13d3d] text-black px-4 py-2 rounded-lg hover:bg-[#f75e5e] transition border border-gray-300 shadow-md flex items-center gap-2"
+      >
+       ← <span>Назад</span>
+</button>
 
+      </div>
         {/* Выпадающий список */}
         {filteredSuggestions.length > 0 && (
           <ul className="border bg-white rounded shadow max-h-40 overflow-y-auto">

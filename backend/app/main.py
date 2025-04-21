@@ -1,18 +1,14 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import timedelta
-from jose import jwt, JWTError
-from app.db.database import get_db, init_db
-from app.db.models.models import User, Recipe 
-from app.db.auth import router as auth_router
-from sqlalchemy.future import select
+from app.db.database import  init_db
+from app.routers.auth import router as auth_router
 from dotenv import load_dotenv
 import os
 from app.routers.recipes import router as search_router
 from app.routers.ingredients import router as recipe_router, router as ingtorec_router, router as search_by_ingredients_router
 from app.routers.change_password import router as password_change_router
 from app.routers.review import router as reviews_router
+from app.routers.profile import router as profile_router
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -50,33 +46,15 @@ app.include_router(search_router, prefix="", tags=["search"])
 app.include_router(recipe_router, prefix="", tags=["recipe"])
 app.include_router(password_change_router, prefix="", tags=["user"])
 app.include_router(ingtorec_router, prefix="", tags=["intorec"])
-
 app.include_router(search_by_ingredients_router, prefix="", tags=["search_reecipe_ing"])
-
 app.include_router(reviews_router, prefix="", tags=["review"])
+app.include_router(profile_router, prefix="", tags=["profile"])
 
 
+# # Главная страница API
+# @app.get("/")
+# def read_root():
+#     return {"message": "API is running"}
 
-# Главная страница API
-@app.get("/")
-def read_root():
-    return {"message": "API is running"}
 
-
-# Защищённый маршрут профиля
-@app.get("/profile")
-async def profile(token: str, db: AsyncSession = Depends(get_db)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-
-        result = await db.execute(select(User).filter(User.username == username))
-        user = result.scalars().first()
-
-        if user is None:
-            raise HTTPException(status_code=401, detail="Недействительный токен")
-
-        return {"username": user.username}
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Ошибка токена")
 

@@ -16,8 +16,8 @@ export default function HomePage() {
   const [bgIndex, setBgIndex] = useState(0);
 
   const backgrounds = [
-    "/images/background1.jpg", 
-    "/images/background2.jpg", 
+    "/images/background1.jpg",
+    "/images/background2.jpg",
     "/images/background3.jpg"
   ];
 
@@ -36,10 +36,21 @@ export default function HomePage() {
   }, [location.state]);
 
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      setError("Пожалуйста, введите хотя бы 3 символа.");
+      setRecipes([]); // Очищаем список перед выводом ошибки
+      return;
+    }
+
+    if (query.trim().length < 3) {
+      setError(`Запрос должен содержать хотя бы 3 символа. Введено: ${query.trim().length}`);
+      setRecipes([]); // Очищаем список перед выводом ошибки
+      return;
+    }
 
     setLoading(true);
-    setError("");
+    setError(""); // Сбрасываем ошибку
+    setRecipes([]); // Сбрасываем список рецептов перед новым поиском
 
     try {
       const response = await fetch(`http://localhost:8000/search?query=${encodeURIComponent(query)}`);
@@ -112,26 +123,34 @@ export default function HomePage() {
         </div>
 
         {loading && <p className="text-teal-600 animate-pulse">Загрузка...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+
+        {error && (
+          <div className="w-full max-w-2xl mt-2 p-4 bg-white border border-red-500 text-red-600 rounded-lg shadow-md">
+            <p>{error}</p>
+          </div>
+        )}
       </div>
 
       {/* Результаты поиска */}
-      <div className="mt-10 w-full max-w-2xl flex-grow overflow-auto z-10">
+      <div className="mt-10 w-full max-w-2xl flex-grow z-10">
         {recipes.length > 0 ? (
-          <ul className="space-y-4">
-            {recipes.map((recipe) => (
-              <li
-                key={recipe.id}
-                onClick={() => navigate(`/recipe/${recipe.id}`)}
-                className="bg-white p-5 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer hover:bg-teal-100"
-              >
-                <h3 className="text-xl font-semibold text-orange-300">{recipe.name}</h3>
-              </li>
-            ))}
-          </ul>
+          <div className="max-h-[500px] overflow-y-auto pr-2">
+            <ul className="space-y-4">
+              {recipes.map((recipe, index) => (
+                <li
+                  key={recipe.id || recipe.recipe?.id || index}
+                  onClick={() => navigate(`/recipe/${recipe.id || recipe.recipe?.id}`)}
+                  className="bg-white p-5 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer hover:bg-teal-100"
+                >
+                  <h3 className="text-xl font-semibold text-orange-300">
+                    {recipe.name || recipe.recipe?.name || "Без названия"}
+                  </h3>
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : (
-          !loading &&
-          query && <p className="text-gray-600 text-center">Рецепты не найдены</p>
+          !loading && query && <p className="text-red-600 text-center font-semibold text-lg"></p>
         )}
       </div>
     </div>
